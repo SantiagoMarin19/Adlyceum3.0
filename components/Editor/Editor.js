@@ -1007,23 +1007,109 @@ function deleteBlock(content) {
             },
             "|",
             {
-              name: "math equation",
-              tooltip: "Ecuaciones Matemáticas",
-              icon: "math",
-              exec: (editor) => {
-                const element = editor.value
-                // console.log('math editor:', element)
-                document.getElementById("editorIcon")?.click();
-              },
+              name: "mathDropdown",
+              tooltip: "Ecuaciones y Símbolos Matemáticos",
+              icon: `<svg width="18" height="18" viewBox="0 0 18 18"><rect x="2" y="2" width="14" height="14" rx="3" fill="#f0f0f0" stroke="#888"/><text x="5" y="13" font-size="10" font-family="serif" fill="#333">ƒx</text><polygon points="9,15 12,12 6,12" fill="#888"/></svg>`,
+              popup: (editor, current, self, close) => {
+                const container = editor.create.div('jodit-math-dropdown');
+                container.style.display = 'grid';
+                container.style.gridTemplateColumns = 'repeat(7, auto)';
+                container.style.gap = '4px';
+                container.style.padding = '8px';
+                container.style.maxWidth = '300px';
+            
+                const items = [
+                  { char: '±', tooltip: 'Plus-minus' },
+                  { char: '∞', tooltip: 'Infinity' },
+                  { char: '=', tooltip: 'Equal' },
+                  { char: '≠', tooltip: 'Not equal to' },
+                  { char: '~', tooltip: 'Approximately' },
+                  { char: '×', tooltip: 'Multiplication' },
+                  { char: '÷', tooltip: 'Division' },
+                  { char: '!', tooltip: 'Factorial' },
+                  { char: '∝', tooltip: 'Proportional to' },
+                  { char: '<', tooltip: 'Less than' },
+                  { char: '≪', tooltip: 'Much less than' },
+                  { char: '>', tooltip: 'Greater than' },
+                  { char: '≫', tooltip: 'Much greater than' },
+                  { char: '≤', tooltip: 'Less than or equal to' },
+                  { char: '≥', tooltip: 'Greater than or equal to' },
+                  { char: '∓', tooltip: 'Minus plus' },
+                  { char: '≅', tooltip: 'Approximately equal' },
+                  { char: '≈', tooltip: 'Almost equal' },
+                  { char: '≡', tooltip: 'Identical' },
+                  { char: '∀', tooltip: 'For all' },
+                  { char: '∁', tooltip: 'Complement' },
+                  { char: '∂', tooltip: 'Partial differential' },
+                  { char: '√', tooltip: 'Square root' },
+                  { char: '∪', tooltip: 'Union' },
+                  { char: '∩', tooltip: 'Intersection' },
+                  { char: '∅', tooltip: 'Empty set' },
+                  { char: '%', tooltip: 'Percentage' },
+                  { char: '°', tooltip: 'Degrees' },
+                  { char: '℉', tooltip: 'Degree Fahrenheit' },
+                  { char: '℃', tooltip: 'Degree Celsius' },
+                  { char: '∆', tooltip: 'Increment' },
+                  { char: '∇', tooltip: 'Nabla' },
+                  { char: '∃', tooltip: 'There exists' },
+                  { char: '∄', tooltip: 'There does not exist' },
+                  { char: '∈', tooltip: 'Element of' },
+                  { char: '∋', tooltip: 'Contains as member' },
+                  { char: '←', tooltip: 'Left arrow' },
+                  { char: '↑', tooltip: 'Up arrow' },
+                  { char: '→', tooltip: 'Right arrow' },
+                  { char: '↓', tooltip: 'Down arrow' },
+                  { char: '↔', tooltip: 'Left-right arrow' },
+                  { char: '∴', tooltip: 'Therefore' },
+                  { char: '+', tooltip: 'Plus' },
+                  { char: '-', tooltip: 'Minus' },
+                  { char: '¬', tooltip: 'Not sign' },
+                  { char: 'α', tooltip: 'Alpha' },
+                  { char: 'β', tooltip: 'Beta' },
+                  { char: 'γ', tooltip: 'Gamma' },
+                  { char: 'δ', tooltip: 'Delta' },
+                  { char: 'ε', tooltip: 'Epsilon' },
+                  { char: 'ϵ', tooltip: 'Epsilon variant' },
+                  { char: 'θ', tooltip: 'Theta' },
+                  { char: 'ϑ', tooltip: 'Theta variant' },
+                  { char: 'μ', tooltip: 'Mu' },
+                  { char: 'π', tooltip: 'Pi' },
+                  { char: 'ρ', tooltip: 'Rho' },
+                  { char: 'σ', tooltip: 'Sigma' },
+                  { char: 'τ', tooltip: 'Tau' },
+                  { char: 'φ', tooltip: 'Phi' },
+                  { char: 'ω', tooltip: 'Omega' },
+                  { char: '*', tooltip: 'Asterisk operator' },
+                  { char: '∙', tooltip: 'Bullet operator' },
+                  { char: '⋮', tooltip: 'Vertical ellipsis' },
+                  { char: '⋯', tooltip: 'Midline ellipsis' },
+                  { char: '⋰', tooltip: 'Up-right diagonal ellipsis' },
+                  { char: '⋱', tooltip: 'Down-right diagonal ellipsis' }
+                ];
+            
+                items.forEach(item => {
+                  const btn = editor.create.div('jodit-math-item');
+                  btn.style.padding = '4px 6px';
+                  btn.style.cursor = 'pointer';
+                  btn.style.border = '1px solid #ccc';
+                  btn.style.borderRadius = '4px';
+                  btn.style.textAlign = 'center';
+                  btn.style.fontSize = '16px';
+                  btn.textContent = item.char;
+                  btn.title = item.tooltip;
+            
+                  btn.onclick = () => {
+                    editor.s.insertHTML(item.char);
+                    close();
+                  };
+            
+                  container.appendChild(btn);
+                });
+            
+                return container;
+              }
             },
-            {
-              name: "chemistry equation",
-              tooltip: "Ecuaciones Químicas",
-              icon: "chemistry",
-              exec: (editor) => {
-                document.getElementById("chemistryIcon")?.click();
-              },
-            },
+          
             "|",
             // insert check button
             {
