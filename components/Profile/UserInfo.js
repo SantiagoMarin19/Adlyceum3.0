@@ -13,7 +13,8 @@ import {Card, CardContent, CardHeader} from "@/components/ui/card"
 import {Input} from "@/components/ui/input"
 import {Label} from "@/components/ui/label"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
-import {CalendarIcon, GraduationCap, Mail, MapPin, Phone, User2, LockIcon} from "lucide-react"
+// 1. Importar el nuevo ícono IdCard
+import {CalendarIcon, GraduationCap, Mail, MapPin, Phone, User2, LockIcon, IdCard} from "lucide-react"
 
 // Components Local
 import Publications from 'components/Profile/Publications';
@@ -29,6 +30,7 @@ const UserInfo = ({
                     phone,
                     birthdate,
                     residence,
+                    dim,
                     updatedAt,
                     gender,
                     level,
@@ -159,7 +161,7 @@ const UserInfo = ({
                   <Select
                       disabled={activeView}
                       defaultValue={gender ?? ''}
-                      onValueChange={(e) => props.onChange({target: {value: e}}, INPUT_TYPES.GENDER)}>
+                      onValuechange={(e) => props.onChange({target: {value: e}}, INPUT_TYPES.GENDER)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccione género"/>
                     </SelectTrigger>
@@ -182,6 +184,19 @@ const UserInfo = ({
                       placeholder="Ingrese su residencia"
                       name={INPUT_TYPES.RESIDENCE}
                       onChange={(e) => props.onChange(e, INPUT_TYPES.RESIDENCE)}/>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="dim">
+                    <IdCard className="mr-2 inline-block h-4 w-4"/>
+                    DIM
+                  </Label>
+                  <Input
+                      disabled={activeView}
+                      value={dim ?? ''}
+                      id="dim"
+                      placeholder="Ingrese su DIM"
+                      name="dim"
+                      onChange={(e) => props.onChange(e, 'dim')}/>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="sharing" className="flex items-center">

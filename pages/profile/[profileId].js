@@ -98,6 +98,7 @@ function Profile({profile = {}, courses = [], posts = [], archivePosts = [], isA
     const {
       id,
       role,
+      dim,
       fullname,
       email,
       phone,
@@ -114,6 +115,7 @@ function Profile({profile = {}, courses = [], posts = [], archivePosts = [], isA
     const fieldsStatus = verifyMutipleFields([
       {field: INPUT_TYPES.FULLNAME, value: fullname, required: true},
       {field: INPUT_TYPES.EMAIL, value: email, required: true},
+      {field: INPUT_TYPES.DIM, value: dim, required: true},
       {field: INPUT_TYPES.PHONE, value: phone, required: true, length: 8},
       {field: INPUT_TYPES.BIRTHDATE, value: birthdate, required: true},
       {field: INPUT_TYPES.GENDER, value: gender},
@@ -137,6 +139,7 @@ function Profile({profile = {}, courses = [], posts = [], archivePosts = [], isA
       phone,
       birthdate,
       gender,
+      dim,
       residence,
       level,
       experience,

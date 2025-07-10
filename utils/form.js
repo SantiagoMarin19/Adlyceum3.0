@@ -1,5 +1,6 @@
 export const INPUT_TYPES = {
     EMAIL: 'email',
+    DIM: 'dim',
     PASSWORD: 'password',
     FULLNAME: 'fullname',
     PHONE: 'phone',
@@ -15,6 +16,10 @@ const ERROR_MSGS = {
     [INPUT_TYPES.EMAIL]: {
         REQUIRED: 'El correo electrónico es requerido. Por favor intentar nuevamente',
         INVALID: 'Correo electrónico invalido. Por favor intentar nuevamente'
+    },
+    [INPUT_TYPES.DIM]: {
+        REQUIRED: 'El DIM es requerido. Por favor intentar nuevamente',
+        INVALID: 'DIM invalido. Por favor intentar nuevamente'
     },
     [INPUT_TYPES.PASSWORD]: {
         REQUIRED: 'La contraseña es requerida. Por favor intentar nuevamente'
