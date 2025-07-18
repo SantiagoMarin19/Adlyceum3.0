@@ -10,6 +10,9 @@ export const INPUT_TYPES = {
     LEVEL: 'level',
     EXPERIENCE: 'experience',
     SHARE_INFO: 'sharing',
+    LANGUAGES: 'languages',
+    EDUCATION: 'education',
+    WORK_EXPERIENCE: 'workExperience',
 }
 
 const ERROR_MSGS = {
@@ -45,6 +48,15 @@ const ERROR_MSGS = {
     },
     [INPUT_TYPES.EXPERIENCE]: {
         REQUIRED: 'La experiencia laboral es requerida. Por favor intentar nuevamente'
+    },
+    [INPUT_TYPES.LANGUAGES]: {
+        REQUIRED: 'Debe agregar al menos un idioma.'
+    },
+    [INPUT_TYPES.EDUCATION]: {
+        REQUIRED: 'Debe agregar al menos una educación.'
+    },
+    [INPUT_TYPES.WORK_EXPERIENCE]: {
+        REQUIRED: 'Debe agregar al menos una experiencia laboral.'
     }
 }
 
@@ -125,6 +137,14 @@ export const verifyField = (field = {}) => {
             }
             break;
 
+        case INPUT_TYPES.LANGUAGES:
+        case INPUT_TYPES.EDUCATION:
+        case INPUT_TYPES.WORK_EXPERIENCE:
+            if (field.required && (!Array.isArray(field.value) || field.value.length === 0)) {
+                error.field = field.field;
+                error.msg = ERROR_MSGS[error.field].REQUIRED;
+            }
+            break;
     }
 
     return error.field ? error : null;
