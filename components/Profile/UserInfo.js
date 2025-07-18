@@ -14,7 +14,20 @@ import {Input} from "@/components/ui/input"
 import {Label} from "@/components/ui/label"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
 // 1. Importar el nuevo ícono IdCard
-import {CalendarIcon, GraduationCap, Mail, MapPin, Phone, User2, LockIcon, IdCard, Plus, Trash2} from "lucide-react"
+import {
+  CalendarIcon,
+  GraduationCap,
+  Mail,
+  MapPin,
+  Phone,
+  User2,
+  LockIcon,
+  IdCard,
+  Plus,
+  Trash2,
+  Languages as LanguagesIcon,
+  Briefcase as BriefcaseIcon
+} from "lucide-react"
 
 // Components Local
 import Publications from 'components/Profile/Publications';
@@ -25,37 +38,46 @@ import {Switch} from "@mui/material";
 let options = {year: 'numeric', month: 'long', day: 'numeric'};
 
 const DEFAULT_LANGUAGE = { language: '', level: 'medio' }
-const DEFAULT_EDUCATION = { career: '', university: '', level: 'Inicio' }
+const DEFAULT_EDUCATION = { career: '', university: '', level: 'Pregrado' }
 const DEFAULT_WORK = { company: '', position: '', start_date: '', end_date: '' }
 
-const LEVELS_EDU = ['Inicio', 'Medio', 'Superior', 'Graduado']
+const LEVELS_EDU = [
+  'Pregrado',
+  'Técnico',
+  'Tecnólogo',
+  'Licenciatura',
+  'Especialización',
+  'Maestría',
+  'Doctorado',
+  'Postdoctorado'
+]
 const LEVELS_LANG = ['medio', 'avanzado', 'nativo']
 
 const UserInfo = ({
-                    fullname,
-                    email,
-                    phone,
-                    birthdate,
-                    residence,
-                    dim,
-                    updatedAt,
-                    gender,
-                    level,
-                    experience,
-                    sharing,
-                    isCurrentUserProfile,
-                    avatarView,
-                    errorState,
-                    refAvatar,
-                    items,
-                    user,
-                    activeView,
-                    setActiveView,
-                    languages,
-                    education,
-                    workExperience,
-                    ...props
-                  }) => {
+  fullname,
+  email,
+  phone,
+  birthdate,
+  residence,
+  dim,
+  updatedAt,
+  gender,
+  level,
+  experience,
+  sharing,
+  isCurrentUserProfile,
+  avatarView,
+  errorState,
+  refAvatar,
+  items,
+  user,
+  activeView,
+  setActiveView,
+  languages,
+  education,
+  workExperience,
+  ...props
+}) => {
   const [isClient, setIsClient] = React.useState(false);
   let formattedDate = new Date(updatedAt).toLocaleDateString('es-ES', options);
   console.log(updatedAt, "updatedAt updatedAt")
@@ -112,6 +134,49 @@ const UserInfo = ({
     const updated = safeWorkExperience.filter((_, i) => i !== idx)
     props.onChange(updated, INPUT_TYPES.WORK_EXPERIENCE)
   }
+
+  // Calendario para experiencia laboral
+  const [calendarOpenIdx, setCalendarOpenIdx] = React.useState({start: null, end: null});
+  const handleCalendarClick = (idx, type) => setCalendarOpenIdx({ ...calendarOpenIdx, [type]: idx });
+  const handleCalendarClose = (type) => setCalendarOpenIdx({ ...calendarOpenIdx, [type]: null });
+
+  // Estado para errores locales de los campos de arrays
+  const [arrayErrors, setArrayErrors] = React.useState({});
+
+  // Validación antes de guardar
+  const validateArrays = () => {
+    const errors = {};
+    // Idiomas
+    safeLanguages.forEach((lang, idx) => {
+      if (!lang.language || !lang.level) {
+        errors[`lang_${idx}`] = true;
+      }
+    });
+    // Educación
+    safeEducation.forEach((edu, idx) => {
+      if (!edu.career || !edu.university || !edu.level) {
+        errors[`edu_${idx}`] = true;
+      }
+    });
+    // Experiencia laboral (solo si hay al menos uno)
+    safeWorkExperience.forEach((work, idx) => {
+      if (
+        (work.company || work.position || work.start_date || (work.end_date && work.end_date !== "Actualidad")) &&
+        (!work.company || !work.position || !work.start_date || (work.end_date !== "Actualidad" && !work.end_date))
+      ) {
+        errors[`work_${idx}`] = true;
+      }
+    });
+    setArrayErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Envolver submitUpdateProfile para validar antes de guardar
+  const handleSave = (e) => {
+    if (validateArrays()) {
+      props.submitUpdateProfile(e);
+    }
+  };
 
   return (
     <main className="container mx-auto px-4 py-1">
@@ -266,120 +331,166 @@ const UserInfo = ({
                 />
               </div>
             </div>
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-8 md:grid-cols-1">
               {/* Idiomas */}
-              <div className="mb-4">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-semibold">Idiomas</h4>
+              <div className="mb-8 flex flex-col items-center">
+                <div className="flex items-center justify-between w-full mb-2">
+                  <div className="flex items-center gap-2">
+                    <LanguagesIcon className="w-5 h-5 text-black" />
+                    <h4 className="font-semibold text-black">Idiomas</h4>
+                  </div>
                   {!activeView && <Button type="button" size="sm" onClick={handleAddLanguage}><Plus className="w-4 h-4" /> Agregar</Button>}
                 </div>
-                {safeLanguages && safeLanguages.length > 0 ? (
-                  safeLanguages.map((lang, idx) => (
-                    <div key={idx} className="flex gap-2 items-center mb-2">
-                      <Input
-                        disabled={activeView}
-                        value={lang.language}
-                        placeholder="Idioma"
-                        onChange={e => handleChangeLanguage(idx, 'language', e.target.value)}
-                        className="w-1/2"
-                      />
-                      <select
-                        disabled={activeView}
-                        value={lang.level}
-                        onChange={e => handleChangeLanguage(idx, 'level', e.target.value)}
-                        className="border rounded px-2 py-1"
-                      >
-                        {LEVELS_LANG.map(lvl => <option key={lvl} value={lvl}>{lvl}</option>)}
-                      </select>
-                      {!activeView && <Button type="button" size="icon" variant="ghost" onClick={() => handleRemoveLanguage(idx)}><Trash2 className="w-4 h-4" /></Button>}
-                    </div>
-                  ))
-                ) : <div className="text-muted-foreground text-sm">No hay idiomas agregados.</div>}
+                <div className="w-full flex flex-col items-center">
+                  {safeLanguages && safeLanguages.length > 0 ? (
+                    safeLanguages.map((lang, idx) => (
+                      <div key={idx} className="flex gap-2 items-center mb-2">
+                        <Input
+                          disabled={activeView}
+                          value={lang.language}
+                          placeholder="Idioma"
+                          onChange={e => handleChangeLanguage(idx, 'language', e.target.value)}
+                          className={`font-normal text-base ${arrayErrors[`lang_${idx}`] ? 'border-red-500' : ''}`}
+                          required
+                        />
+                        <select
+                          disabled={activeView}
+                          value={lang.level}
+                          onChange={e => handleChangeLanguage(idx, 'level', e.target.value)}
+                          className={`border rounded px-2 py-1 font-normal text-base ${arrayErrors[`lang_${idx}`] ? 'border-red-500' : ''} ${activeView ? 'appearance-none' : ''}`}
+                          style={activeView ? {pointerEvents: 'none', backgroundColor: '#f3f4f6'} : {}}
+                          required
+                        >
+                          <option value="" disabled>Seleccione nivel</option>
+                          {LEVELS_LANG.map(lvl => <option key={lvl} value={lvl}>{lvl}</option>)}
+                        </select>
+                        {!activeView && <Button type="button" size="icon" variant="ghost" onClick={() => handleRemoveLanguage(idx)}><Trash2 className="w-4 h-4" /></Button>}
+                      </div>
+                    ))
+                  ) : <div className="text-muted-foreground text-sm">No hay idiomas agregados.</div>}
+                </div>
               </div>
               {/* Educación */}
-              <div className="mb-4">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-semibold">Educación</h4>
+              <div className="mb-8 flex flex-col items-center">
+                <div className="flex items-center justify-between w-full mb-2">
+                  <div className="flex items-center gap-2">
+                    <GraduationCap className="w-5 h-5 text-black" />
+                    <h4 className="font-semibold text-black">Educación</h4>
+                  </div>
                   {!activeView && <Button type="button" size="sm" onClick={handleAddEducation}><Plus className="w-4 h-4" /> Agregar</Button>}
                 </div>
-                {safeEducation && safeEducation.length > 0 ? (
-                  safeEducation.map((edu, idx) => (
-                    <div key={idx} className="flex gap-2 items-center mb-2">
-                      <Input
-                        disabled={activeView}
-                        value={edu.career}
-                        placeholder="Carrera"
-                        onChange={e => handleChangeEducation(idx, 'career', e.target.value)}
-                        className="w-1/4"
-                      />
-                      <Input
-                        disabled={activeView}
-                        value={edu.university}
-                        placeholder="Universidad"
-                        onChange={e => handleChangeEducation(idx, 'university', e.target.value)}
-                        className="w-1/4"
-                      />
-                      <select
-                        disabled={activeView}
-                        value={edu.level}
-                        onChange={e => handleChangeEducation(idx, 'level', e.target.value)}
-                        className="border rounded px-2 py-1"
-                      >
-                        {LEVELS_EDU.map(lvl => <option key={lvl} value={lvl}>{lvl}</option>)}
-                      </select>
-                      {!activeView && <Button type="button" size="icon" variant="ghost" onClick={() => handleRemoveEducation(idx)}><Trash2 className="w-4 h-4" /></Button>}
-                    </div>
-                  ))
-                ) : <div className="text-muted-foreground text-sm">No hay educación agregada.</div>}
+                <div className="w-full flex flex-col items-center">
+                  {safeEducation && safeEducation.length > 0 ? (
+                    safeEducation.map((edu, idx) => (
+                      <div key={idx} className="flex gap-2 items-center mb-2">
+                        <Input
+                          disabled={activeView}
+                          value={edu.career}
+                          placeholder="Carrera"
+                          onChange={e => handleChangeEducation(idx, 'career', e.target.value)}
+                          className={`font-normal text-base ${arrayErrors[`edu_${idx}`] ? 'border-red-500' : ''}`}
+                          required
+                        />
+                        <Input
+                          disabled={activeView}
+                          value={edu.university}
+                          placeholder="Universidad"
+                          onChange={e => handleChangeEducation(idx, 'university', e.target.value)}
+                          className={`font-normal text-base ${arrayErrors[`edu_${idx}`] ? 'border-red-500' : ''}`}
+                          required
+                        />
+                        <select
+                          disabled={activeView}
+                          value={edu.level}
+                          onChange={e => handleChangeEducation(idx, 'level', e.target.value)}
+                          className={`border rounded px-2 py-1 font-normal text-base ${arrayErrors[`edu_${idx}`] ? 'border-red-500' : ''} ${activeView ? 'appearance-none' : ''}`}
+                          style={activeView ? {pointerEvents: 'none', backgroundColor: '#f3f4f6'} : {}}
+                          required
+                        >
+                          <option value="" disabled>Seleccione nivel</option>
+                          {LEVELS_EDU.map(lvl => <option key={lvl} value={lvl}>{lvl}</option>)}
+                        </select>
+                        {!activeView && <Button type="button" size="icon" variant="ghost" onClick={() => handleRemoveEducation(idx)}><Trash2 className="w-4 h-4" /></Button>}
+                      </div>
+                    ))
+                  ) : <div className="text-muted-foreground text-sm">No hay educación agregada.</div>}
+                </div>
               </div>
               {/* Experiencia Laboral */}
-              <div className="mb-4">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-semibold">Experiencia Laboral</h4>
+              <div className="mb-8 flex flex-col items-center">
+                <div className="flex items-center justify-between w-full mb-2">
+                  <div className="flex items-center gap-2">
+                    <BriefcaseIcon className="w-5 h-5 text-black" />
+                    <h4 className="font-semibold text-black">Experiencia Laboral</h4>
+                  </div>
                   {!activeView && <Button type="button" size="sm" onClick={handleAddWork}><Plus className="w-4 h-4" /> Agregar</Button>}
                 </div>
-                {safeWorkExperience && safeWorkExperience.length > 0 ? (
-                  safeWorkExperience.map((work, idx) => (
-                    <div key={idx} className="flex gap-2 items-center mb-2">
-                      <Input
-                        disabled={activeView}
-                        value={work.company}
-                        placeholder="Empresa"
-                        onChange={e => handleChangeWork(idx, 'company', e.target.value)}
-                        className="w-1/5"
-                      />
-                      <Input
-                        disabled={activeView}
-                        value={work.position}
-                        placeholder="Puesto"
-                        onChange={e => handleChangeWork(idx, 'position', e.target.value)}
-                        className="w-1/5"
-                      />
-                      <Input
-                        disabled={activeView}
-                        value={work.start_date}
-                        placeholder="Fecha Inicio (MM/YYYY)"
-                        onChange={e => handleChangeWork(idx, 'start_date', e.target.value)}
-                        className="w-1/6"
-                      />
-                      <Input
-                        disabled={activeView}
-                        value={work.end_date}
-                        placeholder="Fecha Fin (MM/YYYY)"
-                        onChange={e => handleChangeWork(idx, 'end_date', e.target.value)}
-                        className="w-1/6"
-                      />
-                      {!activeView && <Button type="button" size="icon" variant="ghost" onClick={() => handleRemoveWork(idx)}><Trash2 className="w-4 h-4" /></Button>}
-                    </div>
-                  ))
-                ) : <div className="text-muted-foreground text-sm">No hay experiencia laboral agregada.</div>}
+                <div className="w-full flex flex-col items-center">
+                  {safeWorkExperience && safeWorkExperience.length > 0 ? (
+                    safeWorkExperience.map((work, idx) => (
+                      <div key={idx} className="flex gap-2 items-center mb-2">
+                        <Input
+                          disabled={activeView}
+                          value={work.company}
+                          placeholder="Empresa"
+                          onChange={e => handleChangeWork(idx, 'company', e.target.value)}
+                          className={`font-normal text-base ${arrayErrors[`work_${idx}`] ? 'border-red-500' : ''}`}
+                          required
+                        />
+                        <Input
+                          disabled={activeView}
+                          value={work.position}
+                          placeholder="Puesto"
+                          onChange={e => handleChangeWork(idx, 'position', e.target.value)}
+                          className={`font-normal text-base ${arrayErrors[`work_${idx}`] ? 'border-red-500' : ''}`}
+                          required
+                        />
+                        {/* Fecha inicio */}
+                        <Input
+                          disabled={activeView}
+                          value={work.start_date}
+                          type="date"
+                          placeholder="Fecha Inicio"
+                          onChange={e => handleChangeWork(idx, 'start_date', e.target.value)}
+                          className={`font-normal text-base ${arrayErrors[`work_${idx}`] ? 'border-red-500' : ''}`}
+                          required
+                        />
+                        {/* Fecha fin y actualidad */}
+                        <div className="flex items-center gap-1">
+                          <Input
+                            disabled={activeView || work.end_date === "Actualidad"}
+                            value={work.end_date === "Actualidad" ? "" : work.end_date}
+                            type="date"
+                            placeholder="Fecha Fin"
+                            onChange={e => handleChangeWork(idx, 'end_date', e.target.value)}
+                            className={`font-normal text-base ${arrayErrors[`work_${idx}`] ? 'border-red-500' : ''}`}
+                            style={work.end_date === "Actualidad" ? {opacity: 0.5, pointerEvents: 'none'} : {}}
+                            required={work.end_date !== "Actualidad"}
+                          />
+                          {!activeView && (
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant={work.end_date === "Actualidad" ? "default" : "outline"}
+                              className="ml-1"
+                              onClick={() => handleChangeWork(idx, 'end_date', work.end_date === "Actualidad" ? "" : "Actualidad")}
+                            >
+                              Actualidad
+                            </Button>
+                          )}
+                        </div>
+                        {!activeView && <Button type="button" size="icon" variant="ghost" onClick={() => handleRemoveWork(idx)}><Trash2 className="w-4 h-4" /></Button>}
+                      </div>
+                    ))
+                  ) : <div className="text-muted-foreground text-sm">No hay experiencia laboral agregada.</div>}
+                </div>
               </div>
             </div>
             {
                 !activeView &&
                 <div className="flex justify-end space-x-4">
                   <Button onClick={handlerOnClose} variant="outline">Cancelar</Button>
-                  <Button onClick={props.submitUpdateProfile}>Guardar Cambios</Button>
+                  <Button onClick={handleSave}>Guardar Cambios</Button>
                 </div>
             }
 
