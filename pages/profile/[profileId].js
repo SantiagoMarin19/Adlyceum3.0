@@ -16,6 +16,7 @@ import Courses from 'components/Profile/Courses';
 import Publications from 'components/Profile/Publications';
 import Loader from 'components/Loader/Loader';
 import ContentTabs from 'components/Profile/Tabs'
+import Company from 'components/Profile/Company'
 
 import styles from 'components/Profile/styles'
 
@@ -256,6 +257,11 @@ function Profile({profile = {}, courses = [], posts = [], archivePosts = [], isA
       value: 'tutorials',
       component: <Publications itemsPerPage={10} items={archivePosts} label={"Tutorías"} user={user} isAdmin={isAdmin}/>
     },
+    {
+      name: 'Compañías',
+      value: 'company',
+      component: <Company label={"Compañías"} user={user} isAdmin={isAdmin}/>
+    }
   ]
 
   return (
