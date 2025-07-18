@@ -165,21 +165,33 @@ function Profile({profile = {}, courses = [], posts = [], archivePosts = [], isA
       sharing,
       languages: JSON.stringify(languages),
       education: JSON.stringify(education),
-      work_experience: JSON.stringify(workExperience), // <- aquí el cambio
+      work_experience: JSON.stringify(workExperience),
       ...(avatar?.id ? {avatar: avatar?.id} : null),
     });
 
     if (entry.error) {
       alert('No se pudo actualizar la entrada');
     } else {
+      // Parsear los campos si vienen como string
+      const parseIfString = (val) => {
+        if (typeof val === 'string') {
+          try { return JSON.parse(val); } catch { return []; }
+        }
+        return Array.isArray(val) ? val : [];
+      };
+
+      setFormState({
+        ...entry,
+        languages: parseIfString(entry.languages),
+        education: parseIfString(entry.education),
+        workExperience: parseIfString(entry.work_experience || entry.workExperience),
+      });
 
       if (avatar?.id) {
         entry.avatar = avatar
         entry.updatedAt = updatedAt
         setActiveModeEdit(true)
       }
-
-      setFormState({...entry});
     }
     triggerLoading(false);
   }, [formState]);
