@@ -180,21 +180,40 @@ function Profile({profile = {}, courses = [], posts = [], archivePosts = [], isA
         return Array.isArray(val) ? val : [];
       };
 
-      setFormState({
-        ...entry,
-        languages: parseIfString(entry.languages),
-        education: parseIfString(entry.education),
-        workExperience: parseIfString(entry.work_experience || entry.workExperience),
-      });
+      // Soft refresh: volver a pedir los datos actualizados al backend
+      try {
+        const profileQuery = isCurrentUserProfile
+          ? query.user.GET_PRIVATE_USER_PROFILE
+          : query.user.GET_PUBLIC_USER_PROFILE;
+        // Cambia aquí: request devuelve un array de resultados, toma el primero
+        const [refreshed] = await request([profileQuery(id)]);
+        const refreshedProfile = refreshed?.user || refreshed; // depende de tu estructura de respuesta
+
+        setFormState({
+          ...refreshedProfile,
+          languages: parseIfString(refreshedProfile.languages),
+          education: parseIfString(refreshedProfile.education),
+          workExperience: parseIfString(refreshedProfile.work_experience || refreshedProfile.workExperience),
+        });
+        setActiveModeEdit(true); // Salir del modo edición después de refrescar
+      } catch (refreshError) {
+        // fallback: usar los datos locales si el refresh falla
+        setFormState({
+          ...entry,
+          languages: parseIfString(entry.languages),
+          education: parseIfString(entry.education),
+          workExperience: parseIfString(entry.work_experience || entry.workExperience),
+        });
+        setActiveModeEdit(true);
+      }
 
       if (avatar?.id) {
         entry.avatar = avatar
         entry.updatedAt = updatedAt
-        setActiveModeEdit(true)
       }
     }
     triggerLoading(false);
-  }, [formState]);
+  }, [formState, isCurrentUserProfile, query, request]);
 
   const doCancel = useCallback(async (e) => {
     setFormState(profile);
