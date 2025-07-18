@@ -10,12 +10,18 @@ export const GET_USER_LOGIN_DATA = email => `
 export const GET_PRIVATE_USER_PROFILE = (id) => `
     user(filter: { id: { eq: "${id}" } }) {
         ${selector.user.PRIVATE_USER_PROFILE}
+        languages
+        education
+        workExperience
     }
 `;
 
 export const GET_PUBLIC_USER_PROFILE = (id) => `
     user(filter: { id: { eq: "${id}" } }) {
         ${selector.user.PUBLIC_USER_PROFILE}
+        languages
+        education
+        workExperience
     }
 `;
 

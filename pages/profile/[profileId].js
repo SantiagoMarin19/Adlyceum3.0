@@ -27,7 +27,12 @@ function Profile({profile = {}, courses = [], posts = [], archivePosts = [], isA
   const {user} = useUser({redirectTo: '/'})
   const router = useRouter();
   const [showLoadingScreen, setShowLoadingScreen] = useState(false);
-  const [formState, setFormState] = useState(profile || {});
+  const [formState, setFormState] = useState({
+    ...profile,
+    languages: profile.languages || [],
+    education: profile.education || [],
+    workExperience: profile.workExperience || []
+  });
   const [errorForm, setErrorForm] = useState(DEFAULT_ERRORFORM);
   const [avatarImage, setAvatarImage] = useState(null);
   const [activeModeEdit, setActiveModeEdit] = useState(true)
@@ -56,10 +61,8 @@ function Profile({profile = {}, courses = [], posts = [], archivePosts = [], isA
       const isFileInput = refs[name]?.current?.files;
       if (isFileInput) {
         triggerLoading(true);
-
         const _files = refs[name].current.files;
         const itemValue = await upload(_files, true, profile?.avatar?.id);
-        console.log({itemValue})
         // Preview the image
         if (_files?.length && FileReader) {
           const fileReader = new FileReader();
@@ -72,14 +75,27 @@ function Profile({profile = {}, courses = [], posts = [], archivePosts = [], isA
         return;
       }
 
-      // Handle non-file inputs
-      let itemValue =
-          typeof e === "boolean" ? e : e.target.value;
+      // Manejo para campos tipo array (idiomas, educación, experiencia)
+      if (
+        name === INPUT_TYPES.LANGUAGES ||
+        name === INPUT_TYPES.EDUCATION ||
+        name === INPUT_TYPES.WORK_EXPERIENCE
+      ) {
+        updateFormState(name, e); // e es el nuevo array
+        return;
+      }
 
+      // Manejo para booleanos (ej: sharing)
+      if (typeof e === "boolean") {
+        updateFormState(name, e);
+        return;
+      }
+
+      // Manejo para otros campos (eventos normales)
+      let itemValue = e?.target?.value ?? e;
       if (name === INPUT_TYPES.PHONE) {
         itemValue = /^\d*[.]?\d*$/.test(itemValue) ? itemValue : formState[name];
       }
-      console.log({name, itemValue})
       updateFormState(name, itemValue);
     } catch (e) {
       console.error("Algo salio mal", e)
@@ -89,7 +105,7 @@ function Profile({profile = {}, courses = [], posts = [], archivePosts = [], isA
   }, [formState, refs, profile?.avatar?.id]);
 
   const updateFormState = (name, value) => {
-    setFormState(prevState => ({...prevState, [name]: value,}));
+    setFormState(prevState => ({...prevState, [name]: value}));
   };
 
   const submitUpdateProfile = useCallback(async (e) => {
@@ -109,7 +125,10 @@ function Profile({profile = {}, courses = [], posts = [], archivePosts = [], isA
       level,
       sharing,
       experience,
-      updatedAt
+      updatedAt,
+      languages,
+      education,
+      workExperience // camelCase en frontend
     } = formState;
 
     const fieldsStatus = verifyMutipleFields([
@@ -118,10 +137,10 @@ function Profile({profile = {}, courses = [], posts = [], archivePosts = [], isA
       {field: INPUT_TYPES.DIM, value: dim, required: true},
       {field: INPUT_TYPES.PHONE, value: phone, required: true, length: 8},
       {field: INPUT_TYPES.BIRTHDATE, value: birthdate, required: true},
-      {field: INPUT_TYPES.GENDER, value: gender},
-      {field: INPUT_TYPES.RESIDENCE, value: residence},
-      {field: INPUT_TYPES.LEVEL, value: level},
-      {field: INPUT_TYPES.EXPERIENCE, value: experience}
+      {field: INPUT_TYPES.LANGUAGES, value: languages, required: true},
+      {field: INPUT_TYPES.EDUCATION, value: education, required: true},
+      {field: INPUT_TYPES.WORK_EXPERIENCE, value: workExperience, required: true},
+      // ...otros campos...
     ]);
 
     if (fieldsStatus) {
@@ -144,6 +163,9 @@ function Profile({profile = {}, courses = [], posts = [], archivePosts = [], isA
       level,
       experience,
       sharing,
+      languages: JSON.stringify(languages),
+      education: JSON.stringify(education),
+      work_experience: JSON.stringify(workExperience), // <- aquí el cambio
       ...(avatar?.id ? {avatar: avatar?.id} : null),
     });
 
