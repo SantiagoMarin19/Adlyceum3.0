@@ -1,9 +1,9 @@
-// pages/api/company.js
 import { buildClient } from '@datocms/cma-client-node';
 import multer from 'multer';
 import { promisify } from 'util';
-import FormData from 'form-data';
-import { Readable } from 'stream';
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
 
 const upload = multer({ storage: multer.memoryStorage() }).fields([
   { name: 'logo', maxCount: 1 },
@@ -17,6 +17,23 @@ const runMiddleware = (req, res, fn) =>
 
 export const config = { api: { bodyParser: false } };
 
+const client = buildClient({ apiToken: process.env.DATOCMS_API_TOKEN });
+
+async function uploadBuffer(buffer, filename) {
+  const tmpPath = path.join(os.tmpdir(), `${Date.now()}-${filename}`);
+  await promisify(fs.writeFile)(tmpPath, buffer);
+
+  try {
+    const uploadRecord = await client.uploads.createFromLocalFile({
+      localPath: tmpPath,
+      skipCreationIfAlreadyExists: false,
+    });
+    return uploadRecord.id;
+  } finally {
+    fs.unlink(tmpPath, () => {});
+  }
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST']);
@@ -26,85 +43,45 @@ export default async function handler(req, res) {
   try {
     await runMiddleware(req, res, upload);
 
-    const dato = buildClient({ apiToken: process.env.DATOCMS_API_TOKEN });
-
-    let logoId = null;
+    let logoUploadId = null;
     if (req.files.logo?.[0]) {
-      const { buffer, originalname, mimetype } = req.files.logo[0];
-        const form = new FormData();
-        form.append('file', buffer, { filename: originalname, contentType: mimetype});
-
-        const uploadRes = await fetch('https://site-api.datocms.com/uploads', {
-        method: 'POST',
-        headers: {
-            Authorization: `Bearer ${process.env.DATOCMS_API_TOKEN}`,
-            Accept: 'application/json',
-            ...form.getHeaders()
-        },
-        body: form
-        });
-
-        const data = await uploadRes.json();
-        console.log(data)
-        // logoId = uploadId;
+      const { buffer, originalname } = req.files.logo[0];
+      logoUploadId = await uploadBuffer(buffer, originalname);
     }
 
-    const adsImageIds = [];
+    const adsUploadIds = [];
     for (const file of req.files.adsImages || []) {
-      const form = new FormData();
-      form.append('file', file.buffer, {
-        filename: file.originalname,
-        contentType: file.mimetype,
-      });
-      const uploadRes = await fetch('https://site-api.datocms.com/uploads', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${process.env.DATOCMS_API_TOKEN}`,
-          ...form.getHeaders(),
-        },
-        body: form,
-      });
-
-      if (!uploadRes.ok) {
-        const text = await uploadRes.text();
-        throw new Error(`Upload failed: ${uploadRes.status} ${text}`);
-      }
-
-      const { data: { id: uploadId } } = await uploadRes.json();
-      const asset = await dato.assets.create({ uploadId });
-      adsImageIds.push(asset.id);
+      const id = await uploadBuffer(file.buffer, file.originalname);
+      adsUploadIds.push(id);
     }
 
-    const payload = {
-      data: {
-        type: 'item',
-        relationships: {
-          item_type: {
-            data: { type: 'item_type', id: 'SuNPGAyCRoqknd8-FINmRw' }
-          },
-          ...(logoId && {
-            logo: { data: { type: 'upload', id: logoId } }
-          }),
-          ...(adsImageIds.length > 0 && {
-            ads_images: {
-                data: adsImageIds.map(id => ({
-                    type: 'upload',
-                    id
-                }))
-            }
-          }),
-        },
-        attributes: {
-          name:        req.body.name,
-          company_type: req.body.company_type,
-          description: req.body.description || '',
-        }
-      }
+    const baseFields = {
+      name:         req.body.name,
+      company_type: req.body.company_type,
+      description:  req.body.description || '',
     };
+    if (logoUploadId) {
+      baseFields.logo = { upload_id: logoUploadId };
+    }
+    if (adsUploadIds.length) {
+      baseFields.ads_images = adsUploadIds.map(upload_id => ({ upload_id }));
+    }
 
-    const { data } = await dato.items.rawCreate(payload);
-    return res.status(200).json(data);
+    console.log('Payload fields:', baseFields);
+    let record;
+    if (req.body.id) {
+      record = await client.items.update(
+        req.body.id,
+        baseFields
+      );
+    } else {
+      record = await client.items.create({
+        item_type: { type: 'item_type', id: 'SuNPGAyCRoqknd8-FINmRw' },
+        ...baseFields
+      });
+    }
 
+    return res.status(200).json(record);
   } catch (error) {
     console.error('Error en /api/company:', error);
     return res.status(500).json({ error: error.message });

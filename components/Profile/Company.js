@@ -37,6 +37,7 @@ export default function Company() {
   }
 
   function openEdit(c) {
+    console.log("Here")
     setEditing(c);
     setForm({
       name: c.name,
@@ -110,7 +111,7 @@ export default function Company() {
           cs.map(c => (c.id === company.id ? company : c))
         );
       } else {
-        setCompanies(cs => [{ ...company.attributes, id: company.id }, ...cs]);
+        setCompanies(cs => [company, ...cs]);
       }
     } catch (err) {
       console.error('Error al guardar compañía:', err);
@@ -176,16 +177,18 @@ export default function Company() {
               >
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{c.id}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{c.name}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{c.companyType}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{c?.company_type || c?.companyType}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{c.description}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                  {/* <button
-                    disabled
-                    onClick={() => openEdit(c)}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openEdit(c);
+                    }}
                     className="text-indigo-600 hover:text-indigo-900 font-medium"
                   >
                     Editar
-                  </button> */}
+                  </button>
                 </td>
               </tr>
             ))}
@@ -207,7 +210,20 @@ export default function Company() {
 
             <label className="block mb-2">
               Tipo
-              <input type="text" className="w-full border px-2 py-1 rounded" value={form.company_type} onChange={e => setForm({ ...form, company_type: e.target.value })} required />
+              <select
+                className="w-full border px-2 py-1 rounded"
+                value={form.company_type}
+                onChange={e => setForm({ ...form, company_type: e.target.value })}
+                required
+              >
+                <option value="">-- Selecciona un tipo --</option>
+                <option value="S.A.">Sociedad Anónima (S.A.)</option>
+                <option value="LTDA.">Sociedad Limitada (LTDA.)</option>
+                <option value="SAS">Sociedad por Acciones Simplificada (SAS)</option>
+                <option value="E.I.R.L.">Empresa Individual de Responsabilidad Limitada (E.I.R.L.)</option>
+                <option value="Cooperativa">Cooperativa</option>
+                <option value="Otra">Otra</option>
+              </select>
             </label>
 
             <label className="block mb-4">
