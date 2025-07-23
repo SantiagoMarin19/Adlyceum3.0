@@ -4,6 +4,9 @@ import { useState, useMemo, useCallback, useEffect } from 'react'
 import { Search, Filter, ChevronUp, ChevronDown, Users, GraduationCap, MapPin, Briefcase } from 'lucide-react'
 import { GET_ALL_STUDENTS_FIELDS, request } from 'utils/graphqlRequest'
 
+// Components
+import StudentMatcher from './StudentMatcher';
+
 export default function Profiles() {
   const [students, setStudents] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
@@ -12,7 +15,8 @@ export default function Profiles() {
   const [selectedStudents, setSelectedStudents] = useState(new Set())
   const [filterUniversity, setFilterUniversity] = useState('')
   const [filterCareer, setFilterCareer] = useState('')
-
+  const [matchOpen, setMatchOpen] = useState(false)
+  
   const parseLevel = useCallback((level) => {
     if (!level) return { career: '', university: '', degree: '' }
     const parts = level.split('/')
@@ -166,6 +170,9 @@ export default function Profiles() {
         {/* Filtros y búsqueda */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <button onClick={() => setMatchOpen(true)}>
+              Match Students
+            </button>
             {/* Búsqueda */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -397,6 +404,14 @@ export default function Profiles() {
           </div>
         </div>
       </div>
+
+      {matchOpen && (
+        <StudentMatcher
+          students={filteredAndSortedStudents}
+          parseLevel={parseLevel}
+          onClose={() => setMatchOpen(false)}
+        />
+      )}
     </div>
   )
 }
