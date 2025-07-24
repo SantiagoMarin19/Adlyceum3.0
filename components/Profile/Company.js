@@ -18,7 +18,9 @@ export default function Company() {
     company_type: '',
     description: '',
     logoFile: null,
+    logoPreview: null,
     adsFiles: [],
+    adsPreviews: [],
   });
 
   async function fetchCompanies() {
@@ -32,11 +34,20 @@ export default function Company() {
 
   function openCreate() {
     setEditing(null);
-    setForm({ name: '', company_type: '', description: '', logoId: null, adsImageIds: [] });
+    setForm({
+      name: '',
+      company_type: '',
+      description: '',
+      logoFile: null,
+      logoPreview: null,
+      adsFiles: [],
+      adsPreviews: [],
+    });
     setModalOpen(true);
   }
 
   function openEdit(c) {
+    console.log("Here")
     setEditing(c);
     setForm({
       name: c.name,
@@ -44,6 +55,8 @@ export default function Company() {
       description: c.description,
       logoId: c.logo?.id,
       adsImageIds: c.adsImages?.map(img => img.id) || [],
+      logoPreview: c.logo?.url || null,
+      adsPreviews: c.adsImages?.map(img => img.url) || [], 
     });
     setModalOpen(true);
   }
@@ -61,12 +74,28 @@ export default function Company() {
 
   async function handleLogoChange(e) {
     const file = e.target.files[0];
-    if (file) setForm(f => ({ ...f, logoFile: file }));
+    if (!file) return;
+    if (form.logoPreview && form.logoFile) {
+      URL.revokeObjectURL(form.logoPreview);
+    }
+    const preview = URL.createObjectURL(file);
+    setForm(f => ({
+      ...f,
+      logoFile: file,
+      logoPreview: preview,
+    }));
   }
 
   async function handleAdsChange(e) {
     const files = Array.from(e.target.files);
-    setForm(f => ({ ...f, adsFiles: files }));
+    form.adsPreviews.forEach(url => URL.revokeObjectURL(url));
+
+    const previews = files.map(file => URL.createObjectURL(file));
+    setForm(f => ({
+      ...f,
+      adsFiles: files,
+      adsPreviews: previews,
+    }));
   }
 
   async function handleSubmit(e) {
@@ -105,12 +134,28 @@ export default function Company() {
       const company = await res.json();
       console.log(company)
       setModalOpen(false);
+      const companyWithPreviews = {
+        ...company,
+        logo: company.logo
+          ? { 
+              ...company.logo, 
+              url: form.logoPreview || company.logo.url 
+            }
+          : null,
+        ads_images: form.adsPreviews.length
+          ? form.adsPreviews.map((url, i) => ({
+              id: company.ads_images[i]?.id || `preview-${i}`,
+              url
+            }))
+          : company.ads_images || []
+      };
+
       if (editing) {
         setCompanies(cs =>
-          cs.map(c => (c.id === company.id ? company : c))
+          cs.map(c => c.id === company.id ? companyWithPreviews : c)
         );
       } else {
-        setCompanies(cs => [{ ...company.attributes, id: company.id }, ...cs]);
+        setCompanies(cs => [companyWithPreviews, ...cs]);
       }
     } catch (err) {
       console.error('Error al guardar compañía:', err);
@@ -176,16 +221,18 @@ export default function Company() {
               >
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{c.id}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{c.name}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{c.companyType}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{c?.company_type || c?.companyType}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{c.description}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                  {/* <button
-                    disabled
-                    onClick={() => openEdit(c)}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openEdit(c);
+                    }}
                     className="text-indigo-600 hover:text-indigo-900 font-medium"
                   >
                     Editar
-                  </button> */}
+                  </button>
                 </td>
               </tr>
             ))}
@@ -207,7 +254,20 @@ export default function Company() {
 
             <label className="block mb-2">
               Tipo
-              <input type="text" className="w-full border px-2 py-1 rounded" value={form.company_type} onChange={e => setForm({ ...form, company_type: e.target.value })} required />
+              <select
+                className="w-full border px-2 py-1 rounded"
+                value={form.company_type}
+                onChange={e => setForm({ ...form, company_type: e.target.value })}
+                required
+              >
+                <option value="">-- Selecciona un tipo --</option>
+                <option value="S.A.">Sociedad Anónima (S.A.)</option>
+                <option value="LTDA.">Sociedad Limitada (LTDA.)</option>
+                <option value="SAS">Sociedad por Acciones Simplificada (SAS)</option>
+                <option value="E.I.R.L.">Empresa Individual de Responsabilidad Limitada (E.I.R.L.)</option>
+                <option value="Cooperativa">Cooperativa</option>
+                <option value="Otra">Otra</option>
+              </select>
             </label>
 
             <label className="block mb-4">
@@ -215,15 +275,34 @@ export default function Company() {
               <textarea className="w-full border px-2 py-1 rounded" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
             </label>
 
-            <label className="block mb-4">
+            {/* Logo */}
+            <label className="block mb-2">
               Logo
               <input type="file" accept="image/*" onChange={handleLogoChange} />
             </label>
+            {form.logoPreview && (
+              <img
+                src={form.logoPreview}
+                alt="Preview logo"
+                className="mb-4 w-32 h-32 object-cover rounded"
+              />
+            )}
 
-            <label className="block mb-4">
+            {/* Ads Images */}
+            <label className="block mb-2">
               Imágenes de anuncio
               <input type="file" accept="image/*" multiple onChange={handleAdsChange} />
             </label>
+            <div className="flex flex-wrap gap-2 mb-4">
+              {form.adsPreviews.map((url, i) => (
+                <img
+                  key={i}
+                  src={url}
+                  alt={`Preview ad ${i + 1}`}
+                  className="w-24 h-24 object-cover rounded"
+                />
+              ))}
+            </div>
 
             <div className="flex justify-end space-x-2 mt-4">
               <button
