@@ -606,33 +606,36 @@ const UserInfo = ({
 
                   <div className="space-y-4">
                     {safeWorkExperience && safeWorkExperience.length > 0 ? (
-                      safeWorkExperience.map((work, idx) => (
-                        <div key={idx} className="p-6 bg-gray-50 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
-                          <div className="space-y-4">
-                            <div className="grid gap-4 md:grid-cols-2">
-                              <div className="space-y-2">
-                                <Label className="text-sm font-medium text-gray-600 tracking-wide">Empresa</Label>
-                                <Input
-                                  disabled={activeView}
-                                  value={work.company}
-                                  placeholder="Ej: Google Inc."
-                                  onChange={e => handleChangeWork(idx, 'company', e.target.value)}
-                                  className={`${arrayErrors[`work_${idx}`] ? 'border-red-300 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'} focus:ring-blue-500`}
-                                  required
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <Label className="text-sm font-medium text-gray-600 tracking-wide">Cargo</Label>
-                                <Input
-                                  disabled={activeView}
-                                  value={work.position}
-                                  placeholder="Ej: Desarrollador Frontend"
-                                  onChange={e => handleChangeWork(idx, 'position', e.target.value)}
-                                  className={`${arrayErrors[`work_${idx}`] ? 'border-red-300 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'} focus:ring-blue-500`}
-                                  required
-                                />
-                              </div>
-                            </div>
+                      safeWorkExperience.map((work, idx) => {
+                        const isActiveJob = work.end_date === "Actualidad"
+                        return (
+                            <div key={idx}
+                                 className="p-6 bg-gray-50 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
+                              <div className="space-y-4">
+                                <div className="grid gap-4 md:grid-cols-2">
+                                  <div className="space-y-2">
+                                    <Label className="text-sm font-medium text-gray-600 tracking-wide">Empresa</Label>
+                                    <Input
+                                        disabled={activeView}
+                                        value={work.company}
+                                        placeholder="Ej: Google Inc."
+                                        onChange={e => handleChangeWork(idx, 'company', e.target.value)}
+                                        className={`${arrayErrors[`work_${idx}`] ? 'border-red-300 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'} focus:ring-blue-500`}
+                                        required
+                                    />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label className="text-sm font-medium text-gray-600 tracking-wide">Cargo</Label>
+                                    <Input
+                                        disabled={activeView}
+                                        value={work.position}
+                                        placeholder="Ej: Desarrollador Frontend"
+                                        onChange={e => handleChangeWork(idx, 'position', e.target.value)}
+                                        className={`${arrayErrors[`work_${idx}`] ? 'border-red-300 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'} focus:ring-blue-500`}
+                                        required
+                                    />
+                                  </div>
+                                </div>
 
                             <div className="grid gap-4 md:grid-cols-2">
                               <div className="space-y-2">
@@ -655,46 +658,46 @@ const UserInfo = ({
                                   Fecha de fin
                                 </Label>
                                 <div className="flex gap-2">
-                                  <Input
-                                    disabled={activeView || work.end_date === "Actualidad"}
-                                    value={work.end_date === "Actualidad" ? "" : work.end_date}
-                                    type="date"
-                                    onChange={e => handleChangeWork(idx, 'end_date', e.target.value)}
-                                    className={`flex-1 ${arrayErrors[`work_${idx}`] ? 'border-red-300 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'} focus:ring-blue-500 ${work.end_date === "Actualidad" ? 'opacity-50' : ''}`}
-                                    required={work.end_date !== "Actualidad"}
-                                  />
-                                  {!activeView && (
-                                    <Button
+                                  {((activeView && !isActiveJob) || !activeView) && <Input
+                                      disabled={activeView || isActiveJob}
+                                      value={isActiveJob ? "" : work.end_date}
+                                      type="date"
+                                      onChange={e => handleChangeWork(idx, 'end_date', e.target.value)}
+                                      className={`flex-1 ${arrayErrors[`work_${idx}`] ? 'border-red-300 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'} focus:ring-blue-500 ${isActiveJob ? 'opacity-50' : ''}`}
+                                      required={work.end_date !== "Actualidad"}
+                                  />}
+                                  {((activeView && isActiveJob) || !activeView) && <Button
                                       type="button"
                                       size="sm"
-                                      variant={work.end_date === "Actualidad" ? "default" : "outline"}
-                                      className={`${work.end_date === "Actualidad" ? 'bg-green-600 hover:bg-green-700 text-white' : 'border-gray-300 text-gray-600 hover:bg-gray-50'} font-medium px-3`}
-                                      onClick={() => handleChangeWork(idx, 'end_date', work.end_date === "Actualidad" ? "" : "Actualidad")}
-                                    >
-                                      Actualidad
-                                    </Button>
-                                  )}
+                                      disabled={activeView}
+                                      variant={isActiveJob ? "default" : "outline"}
+                                      className={`${isActiveJob ? 'bg-green-600 hover:bg-green-700 text-white' : 'border-gray-300 text-gray-600 hover:bg-gray-50'} font-medium px-3`}
+                                      onClick={() => handleChangeWork(idx, 'end_date', isActiveJob ? "" : "Actualidad")}
+                                  >
+                                    Actualidad
+                                  </Button>}
                                 </div>
                               </div>
                             </div>
 
-                            {!activeView && (
-                              <div className="flex justify-end border-t border-gray-200 pt-4">
-                                <Button
-                                  type="button"
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => handleRemoveWork(idx)}
-                                  className="text-gray-400 hover:text-red-500 hover:bg-red-50 font-medium"
-                                >
-                                  <Trash2 className="w-4 h-4 mr-2" />
-                                  Eliminar experiencia
-                                </Button>
+                                {!activeView && (
+                                    <div className="flex justify-end border-t border-gray-200 pt-4">
+                                      <Button
+                                          type="button"
+                                          size="sm"
+                                          variant="ghost"
+                                          onClick={() => handleRemoveWork(idx)}
+                                          className="text-gray-400 hover:text-red-500 hover:bg-red-50 font-medium"
+                                      >
+                                        <Trash2 className="w-4 h-4 mr-2"/>
+                                        Eliminar experiencia
+                                      </Button>
+                                    </div>
+                                )}
                               </div>
-                            )}
-                          </div>
-                        </div>
-                      ))
+                            </div>
+                        )
+                      })
                     ) : (
                       <div className="text-center py-12 text-gray-500">
                         <BriefcaseIcon className="h-16 w-16 mx-auto mb-4 text-gray-300" />
@@ -744,11 +747,11 @@ const UserInfo = ({
                   </div>
                 </CardHeader>
                 <CardContent className="p-8">
-                  <Publications 
-                    itemsPerPage={10} 
-                    items={items} 
-                    label={"Publicaciones"} 
-                    user={user} 
+                  <Publications
+                    itemsPerPage={10}
+                    items={items}
+                    label={"Publicaciones"}
+                    user={user}
                   />
                 </CardContent>
               </Card>

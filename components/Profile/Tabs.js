@@ -15,7 +15,7 @@ const ContentTabs = ({data}) => {
   if (data?.length <= 0) return null
   return (
       <nav>
-        <div className="container mx-auto px-4">
+        <div className="container mx-2 px-4">
           <Tabs defaultValue="profile" className={styles.contTabs}>
             <TabsList className={styles.contTabList}>
               {
