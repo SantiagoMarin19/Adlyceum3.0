@@ -362,13 +362,13 @@ const UserInfo = ({
                   <div className="space-y-2">
                     <Label htmlFor="dim" className="flex items-center text-sm font-medium text-gray-700">
                       <IdCard className="mr-2 h-4 w-4 text-gray-500" />
-                      Número DIM
+                      Doc. Identidad
                     </Label>
                     <Input
                       disabled={activeView}
                       value={dim ?? ''}
                       id="dim"
-                      placeholder="Ingrese número de DIM"
+                      placeholder="Ingrese número de documento de Identidad"
                       name="dim"
                       onChange={(e) => props.onChange(e, 'dim')}
                       className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
@@ -436,7 +436,7 @@ const UserInfo = ({
                       safeLanguages.map((lang, idx) => (
                         <div key={idx} className="flex gap-4 items-start p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
                           <div className="flex-1 space-y-2">
-                            <Label className="text-xs font-medium text-gray-600 uppercase tracking-wide">Idioma</Label>
+                            <Label className="text-sm font-medium text-gray-600 tracking-wide">Idioma</Label>
                             <Input
                               disabled={activeView}
                               value={lang.language}
@@ -447,7 +447,7 @@ const UserInfo = ({
                             />
                           </div>
                           <div className="flex-1 space-y-2">
-                            <Label className="text-xs font-medium text-gray-600 uppercase tracking-wide">Nivel</Label>
+                            <Label className="text-sm font-medium text-gray-600 tracking-wide">Nivel</Label>
                             <select
                               disabled={activeView}
                               value={lang.level}
@@ -489,7 +489,7 @@ const UserInfo = ({
                       <div className="p-2 bg-indigo-50 rounded-lg">
                         <GraduationCap className="h-5 w-5 text-indigo-600" />
                       </div>
-                      <h3 className="text-lg font-semibold text-gray-900">Educación</h3>
+                      <h3 className="text-lg font-semibold text-gray-900">Educación/Certificaciones</h3>
                     </div>
                     {!activeView && (
                       <Button
@@ -510,7 +510,7 @@ const UserInfo = ({
                         <div key={idx} className="p-6 bg-gray-50 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
                           <div className="grid gap-4 md:grid-cols-4">
                             <div className="space-y-2">
-                              <Label className="text-xs font-medium text-gray-600 uppercase tracking-wide">Carrera/Programa</Label>
+                              <Label className="text-sm font-medium text-gray-600 tracking-wide">Carrera/Programa</Label>
                               <Input
                                 disabled={activeView}
                                 value={edu.career}
@@ -521,7 +521,7 @@ const UserInfo = ({
                               />
                             </div>
                             <div className="space-y-2">
-                              <Label className="text-xs font-medium text-gray-600 uppercase tracking-wide">Institución</Label>
+                              <Label className="text-sm font-medium text-gray-600 tracking-wide">Institución</Label>
                               <Input
                                 disabled={activeView}
                                 value={edu.university}
@@ -532,7 +532,7 @@ const UserInfo = ({
                               />
                             </div>
                             <div className="space-y-2">
-                              <Label className="text-xs font-medium text-gray-600 uppercase tracking-wide">Nivel académico</Label>
+                              <Label className="text-sm font-medium text-gray-600 tracking-wide">Nivel académico</Label>
                               <select
                                 disabled={activeView}
                                 value={edu.level}
@@ -546,7 +546,7 @@ const UserInfo = ({
                             </div>
                             {/* Fecha fin solo si es "Graduado" */}
                             <div className="space-y-2">
-                              <Label className="text-xs font-medium text-gray-600 uppercase tracking-wide">Fecha de fin</Label>
+                              <Label className="text-sm font-medium text-gray-600 tracking-wide">Fecha de fin</Label>
                               <Input
                                 disabled={activeView || edu.level !== "Graduado"}
                                 value={edu.end_date || ""}
@@ -611,7 +611,7 @@ const UserInfo = ({
                           <div className="space-y-4">
                             <div className="grid gap-4 md:grid-cols-2">
                               <div className="space-y-2">
-                                <Label className="text-xs font-medium text-gray-600 uppercase tracking-wide">Empresa</Label>
+                                <Label className="text-sm font-medium text-gray-600 tracking-wide">Empresa</Label>
                                 <Input
                                   disabled={activeView}
                                   value={work.company}
@@ -622,7 +622,7 @@ const UserInfo = ({
                                 />
                               </div>
                               <div className="space-y-2">
-                                <Label className="text-xs font-medium text-gray-600 uppercase tracking-wide">Cargo</Label>
+                                <Label className="text-sm font-medium text-gray-600 tracking-wide">Cargo</Label>
                                 <Input
                                   disabled={activeView}
                                   value={work.position}
@@ -636,7 +636,7 @@ const UserInfo = ({
 
                             <div className="grid gap-4 md:grid-cols-2">
                               <div className="space-y-2">
-                                <Label className="text-xs font-medium text-gray-600 uppercase tracking-wide flex items-center gap-1">
+                                <Label className="text-sm font-medium text-gray-600 tracking-wide flex items-center gap-1">
                                   <CalendarIcon className="w-3 h-3" />
                                   Fecha de inicio
                                 </Label>
@@ -650,7 +650,7 @@ const UserInfo = ({
                                 />
                               </div>
                               <div className="space-y-2">
-                                <Label className="text-xs font-medium text-gray-600 uppercase tracking-wide flex items-center gap-1">
+                                <Label className="text-sm font-medium text-gray-600 tracking-wide flex items-center gap-1">
                                   <CalendarIcon className="w-3 h-3" />
                                   Fecha de fin
                                 </Label>
