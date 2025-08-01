@@ -216,10 +216,15 @@ function Profile({profile = {}, courses = [], posts = [], archivePosts = [], isA
     triggerLoading(false);
   }, [formState, isCurrentUserProfile, query, request]);
 
-  const doCancel = useCallback(async (e) => {
-    setFormState(profile);
+  const doCancel = useCallback(() => {
+    setFormState({
+      ...profile,
+      languages: profile.languages || [],
+      education: profile.education || [],
+      workExperience: profile.workExperience || [],
+    });
     setAvatarImage(null);
-  }, [profile])
+  }, [profile]);
 
   const actionsTabs = [
     {

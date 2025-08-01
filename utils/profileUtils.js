@@ -18,6 +18,8 @@ export const ETAPAS_EDU = [
 
 export const LEVELS_LANG = ['prinicipiante', 'medio', 'avanzado', 'nativo']
 
+export const removeDigits = (text = '') => text.replace(/\d+/g, '')
+
 // Generic handlers for dynamic arrays (idiomas, educacion, experiencia)
 export function handleAddItem(arr, defaultObj, onChange, type) {
   onChange([...arr, { ...defaultObj }], type)
@@ -45,10 +47,19 @@ export function validateProfileArrays({ languages = [], education = [], workExpe
     }
   })
   workExperience.forEach((work, idx) => {
-    if (
-      (work.company || work.position || work.start_date || (work.end_date && work.end_date !== "Actualidad")) &&
-      (!work.company || !work.position || !work.start_date || (work.end_date !== "Actualidad" && !work.end_date))
-    ) {
+    const isEmpty =
+      !work.company &&
+      !work.position &&
+      !work.start_date &&
+      !work.end_date;
+
+    const isIncomplete =
+      !work.company ||
+      !work.position ||
+      !work.start_date ||
+      (work.end_date !== "Actualidad" && !work.end_date);
+
+    if (isEmpty || isIncomplete) {
       errors[`work_${idx}`] = true;
     }
   })
