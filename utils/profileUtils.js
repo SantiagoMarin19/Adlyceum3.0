@@ -45,10 +45,19 @@ export function validateProfileArrays({ languages = [], education = [], workExpe
     }
   })
   workExperience.forEach((work, idx) => {
-    if (
-      (work.company || work.position || work.start_date || (work.end_date && work.end_date !== "Actualidad")) &&
-      (!work.company || !work.position || !work.start_date || (work.end_date !== "Actualidad" && !work.end_date))
-    ) {
+    const isEmpty =
+      !work.company &&
+      !work.position &&
+      !work.start_date &&
+      !work.end_date;
+
+    const isIncomplete =
+      !work.company ||
+      !work.position ||
+      !work.start_date ||
+      (work.end_date !== "Actualidad" && !work.end_date);
+
+    if (isEmpty || isIncomplete) {
       errors[`work_${idx}`] = true;
     }
   })

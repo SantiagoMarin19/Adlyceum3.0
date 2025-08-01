@@ -167,31 +167,35 @@ const UserInfo = ({
 
   // Validación antes de guardar
  const handleSave = (e) => {
-  // 1. Validamos arrays, solo para resaltar errores en UI
   const errors = validateProfileArrays({
     languages: safeLanguages,
     education: safeEducation,
-    workExperience: safeWorkExperience
+    workExperience: safeWorkExperience,
   });
   setArrayErrors(errors);
 
-  // 2. Validamos los campos simples obligatorios
+  if (Object.keys(errors).length > 0) {
+    const first = Object.keys(errors)[0];
+    if (first.startsWith('lang_') && langRef.current) langRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (first.startsWith('edu_') && eduRef.current) eduRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (first.startsWith('work_') && workRef.current) workRef.current.scrollIntoView({ behavior: 'smooth' });
+    return;
+  }
+
   const requiredFields = [
     { name: 'phone', value: phone, label: 'Teléfono' },
     { name: 'email', value: email, label: 'Correo electrónico' },
     { name: 'residence', value: residence, label: 'Dirección' },
-    // agrega los que quieras obligatorios aquí...
   ];
 
-  // 3. Chequeamos si falta alguno
-  const missing = requiredFields.filter(f => !f.value || (typeof f.value === 'string' && f.value.trim() === ''));
+  const missing = requiredFields.filter(
+    (f) => !f.value || (typeof f.value === 'string' && f.value.trim() === '')
+  );
   if (missing.length > 0) {
-    // Opcional: muestra toast, alert, etc
-    alert(`Por favor completa los siguientes campos obligatorios:\n${missing.map(f => f.label).join('\n')}`);
+    alert(`Por favor completa los siguientes campos obligatorios:\n${missing.map((f) => f.label).join('\n')}`);
     return;
   }
 
-  // 4. Guardamos siempre aunque los arrays estén incompletos
   props.submitUpdateProfile(e);
 };
 
@@ -550,13 +554,15 @@ const UserInfo = ({
                                   Fecha de fin
                                 </Label>
                                 <div className="flex gap-2">
-                                  <Input
-                                    disabled={activeView || isActiveJob}
-                                    value={isActiveJob ? "" : work.end_date}
-                                    type="date"
-                                    onChange={e => handleChangeWork(idx, 'end_date', e.target.value)}
-                                    className={`flex-1 ${arrayErrors[`work_${idx}`] ? 'border-red-300 focus:border-red-500' : 'border-gray-300 focus:border-slate-500'} focus:ring-slate-500 ${isActiveJob ? 'opacity-50' : ''}`}
-                                  />
+                                  {!isActiveJob && (
+                                    <Input
+                                      disabled={activeView}
+                                      value={work.end_date}
+                                      type="date"
+                                      onChange={e => handleChangeWork(idx, 'end_date', e.target.value)}
+                                      className={`flex-1 ${arrayErrors[`work_${idx}`] ? 'border-red-300 focus:border-red-500' : 'border-gray-300 focus:border-slate-500'} focus:ring-slate-500`}
+                                    />
+                                  )}
                                   <Button
                                     type="button"
                                     variant={isActiveJob ? "default" : "outline"}
@@ -595,7 +601,7 @@ const UserInfo = ({
             </div>
 
             {/* Sección de Idiomas y Educación */}
-            <div className="grid gap-8 lg:grid-cols-2">
+            <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
               {/* Idiomas */}
               <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
                 <div className="flex items-center justify-between mb-6">
