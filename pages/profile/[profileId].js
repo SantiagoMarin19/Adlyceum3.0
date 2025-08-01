@@ -156,7 +156,7 @@ function Profile({profile = {}, courses = [], posts = [], archivePosts = [], isA
       role: role.id,
       fullname: fullname?.trim(),
       email: email?.trim(),
-      phone: phone?.trim(),
+      phone: phone != null ? String(phone).trim() : '',
       birthdate,
       gender,
       dim,

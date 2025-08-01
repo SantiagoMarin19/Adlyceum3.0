@@ -4,7 +4,7 @@ import Head from 'next/head'
 import { useRouter } from 'next/router'
 
 // Tabs Content
-import { actionsTabs } from './const'
+import { actionsTabs } from 'components/Company/const'
 
 // Components
 import Header from 'components/Header/Header'
