@@ -28,6 +28,7 @@ import {
 
 // Components Local
 import Publications from 'components/Profile/Publications';
+import ConfirmationDialog from 'components/confirmation-dialog';
 
 
 let options = { year: 'numeric', month: 'long', day: 'numeric' };
@@ -43,7 +44,20 @@ const UserInfo = ({
   const [removingAnimation, setRemovingAnimation] = React.useState('');
 
   let formattedDate = new Date(updatedAt).toLocaleDateString('es-ES', options);
-  console.log(updatedAt, "updatedAt updatedAt")
+
+  const [showUpdatePrompt, setShowUpdatePrompt] = React.useState(false)
+
+  React.useEffect(() => {
+    if (!updatedAt) return
+    const dismissed = localStorage.getItem('profileUpdateDismissed')
+    if (dismissed) return
+    const last = new Date(updatedAt)
+    const diff = Date.now() - last.getTime()
+    const months = diff / (1000 * 60 * 60 * 24 * 30)
+    if (months >= 6) {
+      setShowUpdatePrompt(true)
+    }
+  }, [updatedAt])
 
   const handlerEdit = () => setActiveView(!activeView)
   const handlerOnClose = () => {
@@ -166,7 +180,7 @@ const UserInfo = ({
   const handleCalendarClose = (type) => setCalendarOpenIdx({ ...calendarOpenIdx, [type]: null });
 
   // Validación antes de guardar
- const handleSave = (e) => {
+const handleSave = (e) => {
   const errors = validateProfileArrays({
     languages: safeLanguages,
     education: safeEducation,
@@ -181,6 +195,9 @@ const UserInfo = ({
     if (first.startsWith('work_') && workRef.current) workRef.current.scrollIntoView({ behavior: 'smooth' });
     return;
   }
+
+  // limpiar errores previos
+  setArrayErrors({});
 
   const requiredFields = [
     { name: 'phone', value: phone, label: 'Teléfono' },
@@ -201,6 +218,20 @@ const UserInfo = ({
 
 
   return (
+    <>
+      <ConfirmationDialog
+        isOpen={showUpdatePrompt}
+        onClose={() => {
+          localStorage.setItem('profileUpdateDismissed', 'true')
+          setShowUpdatePrompt(false)
+        }}
+        onConfirm={() => {
+          localStorage.removeItem('profileUpdateDismissed')
+          setShowUpdatePrompt(false)
+          setActiveView(false)
+        }}
+        message="Tu perfil no se actualiza desde hace varios meses. ¿Deseas editarlo?"
+      />
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex flex-col lg:flex-row gap-8">
@@ -648,7 +679,7 @@ const UserInfo = ({
                           </div>
                         ) : (
                           <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 space-y-3">
-                            <div className="grid gap-3 md:grid-cols-2">
+                            <div className="grid gap-3 md:grid-cols-3">
                               <div>
                                 <Label className="text-sm font-medium text-gray-600 mb-1 block">Idioma</Label>
                                 <Input
@@ -769,7 +800,7 @@ const UserInfo = ({
                                 className={`${arrayErrors[`edu_${idx}`] ? 'border-red-300 focus:border-red-500' : 'border-gray-300 focus:border-slate-500'} focus:ring-slate-500`}
                               />
                             </div>
-                            <div className="grid gap-3 md:grid-cols-2">
+                            <div className="grid gap-3 md:grid-cols-3">
                               <div>
                                 <Label className="text-sm font-medium text-gray-600 mb-1 block">Nivel académico</Label>
                                 <select
@@ -883,6 +914,7 @@ const UserInfo = ({
         </div>
       </div>
     </div>
+    </>
   );
 };
 
